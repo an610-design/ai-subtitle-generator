@@ -50,28 +50,23 @@ if uploaded_file is not None:
                 # 辨識完成後，將暫存檔從硬碟刪除，保持電腦整潔
                 os.unlink(temp_file_path)
 
-                # 3. 處理並組裝 SRT 字幕字串
-                srt_content = ""
-                for i, segment in enumerate(result["segments"]):
-                    start_time = format_time(segment["start"])
-                    end_time = format_time(segment["end"])
-                    text = segment["text"].strip()
-
-                    srt_content += f"{i + 1}\n{start_time} --> {end_time}\n{text}\n\n"
-
-                st.success(" 逐字稿辨識完成！")
-
-                # 4. 提供下載按鈕，讓使用者下載產出的 SRT 檔案
+              # 3. 直接提取純文字內容 (不需要迴圈了！)
+                # Whisper 已經幫我們把完整純文字放在 result["text"] 中
+                transcript_text = result["text"].strip()
+                
+                st.success("逐字稿辨識完成！")
+                
+                # 4. 提供下載按鈕，改為下載 .txt 純文字檔
                 st.download_button(
-                    label="下載 SRT 字幕檔案",
-                    data=srt_content,
-                    file_name=f"{os.path.splitext(uploaded_file.name)[0]}.srt",
+                    label="下載純文字檔案",
+                    data=transcript_text,
+                    file_name=f"{os.path.splitext(uploaded_file.name)[0]}.txt",  # 副檔名改成 .txt
                     mime="text/plain"
                 )
-
+                
                 # 在網頁上即時預覽前幾段內容
                 st.subheader("逐字稿內容預覽")
-                st.text_area("前段內容：", value=srt_content[:1000] + "\n... (以下省略)", height=300)
+                st.text_area("前段內容：", value=transcript_text[:1000] + "\n... (以下省略)", height=300)
 
             except Exception as e:
                 st.error(f"程式執行發生錯誤：{e}")
